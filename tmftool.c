@@ -38,7 +38,7 @@
 
 unsigned char *inputbuffer;
 unsigned char *outputbuffer;
-unsigned char *playercode = defaultplayer;
+unsigned char *playercode = tmfplayer_prg;
 
 int mode = CREATE;
 int verbose = 0;
@@ -49,7 +49,7 @@ char *playername = NULL;
 int inputlength;
 int outputptr = 0;
 
-int playerlength = sizeof(defaultplayer)/sizeof(char);
+int playerlength = sizeof(tmfplayer_prg)/sizeof(char);
 
 int init = 0;
 int play = 0;
