@@ -38,7 +38,7 @@
 
 unsigned char *inputbuffer;
 unsigned char *outputbuffer;
-unsigned char *playercode = &defaultplayer;
+unsigned char *playercode = defaultplayer;
 
 int mode = CREATE;
 int verbose = 0;
@@ -98,11 +98,11 @@ void usage(char *name) {
 		"\t[--verbose]\n"
 		"\t<input name> <output name>\n", name);
 	printf("Example:\n"
-		"%s extract exorcist.tmf.prg exorcist.prg", name);
+		"%s extract exorcist.tmf.prg exorcist.prg\n", name);
 	printf("\n%s info \n"
 		"\t<input name>\n", name);
 	printf("Example:\n"
-		"%s info exorcist.tmf.prg", name);
+		"%s info exorcist.tmf.prg\n", name);
 }
 
 int readinput() {
@@ -190,11 +190,11 @@ int checktmf() {
 	return SUCCESS;
 }
 
-int getword(address) {
+int getword(int address) {
 	return (inputbuffer[address+1] << 8)+inputbuffer[address];
 }
 
-char * getstring(address) {
+char * getstring(int address) {
 	char *value = malloc(33);
 	int i;
 	for(i = 0; i < 32; i++) {
