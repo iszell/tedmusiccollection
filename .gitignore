@@ -1,4 +1,5 @@
 defaulttmfplayer.h
+*.lst
 *.exe
 *.prg
 *.sym
