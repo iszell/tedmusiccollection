@@ -33,7 +33,7 @@ To create a TED Music File you need to
 * in flag fields 0 means the flag is off and 1 means on. all not specified bits should be set to 0.
 ## File layout
 |Offset (decimal)|Offset (hexadecimal)|Address when loaded|Type|Length (decimal)|Name|Mandatory|Value|Remarks|
-|----------------|--------------------|-------------------|----|----------------|----|---------|-----|-------|
+|-|-|-|-|-|-|-|-|-|
 |0|0|none|word|2|loadaddress|yes|$1001|not checked|
 |2|2|$1001|word|2|basicnextline|yes|$100b|not checked|
 |4|4|$1003|word|2|basiclinenumber|yes|2020|not checked|
