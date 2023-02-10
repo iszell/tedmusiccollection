@@ -8,17 +8,19 @@
 ;	.word	*
 filestart
 	.word	nextline
-	.word	2020
+	.word	2022
 	.byte	$9e
 	.text	"4352"
 	.byte	0
-nextline	.word	0
+nextline
+	.word	0
 	.align	$1010
 
 ; TED Music File header
 ; =====================
 ; Magic marker for TED Music
-signature	.text	"tedmusic"
+signature
+	.text	"tedmusic"
 ; Music data specification version
 version
 	.byte	1
@@ -36,8 +38,10 @@ numberofsongs
 timing	.byte	2
 timer1value
 	.word	8867
-songflags	.byte	0
-fileflags	.byte	0
+songflags
+	.byte	0
+fileflags
+	.byte	0
 durationoffset
 	.word	0
 	.align	32

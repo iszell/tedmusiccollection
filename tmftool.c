@@ -25,6 +25,8 @@
 #define NTSCTIMER	3
 #define PALCUSTOMTIMER	4
 #define NTSCCUSTOMTIMER	5
+#define PAL2X	6
+#define NTSC2X	7
 // Song flags
 #define SCREENOFF	1
 #define SID		2
@@ -388,16 +390,16 @@ int main(int argc, char *argv[]) {
 				} else if(strcmp("pal1x", argv[i]) == 0) {
 					timing = PALVBLANK;
 				} else if(strcmp("pal2x", argv[i]) == 0) {
-					timing = PALTIMER;
-					timer = 8867;
+					timing = PAL2X;
+					// timer = 8867;
 				} else if(strcmp("pal4x", argv[i]) == 0) {
 					timing = PALTIMER;
 					timer = 4433;
 				} else if(strcmp("ntsc1x", argv[i]) == 0) {
 					timing = NTSCVBLANK;
 				} else if(strcmp("ntsc2x", argv[i]) == 0) {
-					timing = NTSCTIMER;
-					timer = 7457;
+					timing = NTSC2X;
+					// timer = 7457;
 				} else if(strcmp("ntsc4x", argv[i]) == 0) {
 					timing = NTSCTIMER;
 					timer = 3728;

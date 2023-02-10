@@ -1,4 +1,3 @@
-
 // TED Music File header
 // =====================
 .label	filestart	=	$1001
@@ -30,6 +29,13 @@
 
 	.encoding	"petscii_mixed"
 
+
+	jsr $ff81	// VIDINIT
+	jsr $ff84	// IOINIT
+	lda #$ff	// hide cursor
+	sta $ff0c
+	sta $ff0d
+
 	jsr	initscreen
 
 	jsr	relocatedata
@@ -42,23 +48,24 @@
 	lda	#%00001000
 	sta	$ff0a
 	sta	$ff09
-	lda	timer1value
-	ldx	timer1value+1
-	sta	$ff00
-	stx	$ff01
-	cli
+	jsr inittimer
 	
 	lda	#0
 	sta	currentsong
 
+	sta $ff3f
 	jsr	init
+	sta $ff3e
+
+	cli
 	
 	jmp	*
 
 init:	jmp	(initaddress)
 play:	jmp	(playaddress)
 
-irq:	inc	$ff19
+irq:
+	inc	$ff19
 	sta	$ff3f
 	jsr	play
 	sta	$ff3e
@@ -72,6 +79,8 @@ irq:	inc	$ff19
 	pla
 	rti
 
+// //TODO: separate routine for movement _before_ dataoffset and after
+// //TODO: relocate player code as well
 // //TODO: allow moving to $1000
 relocatedata:
 	clc
@@ -236,11 +245,136 @@ dectoasc:
 	sta	decstr+2
 	rts
 
-decstr:	.text	"000"
+inittimer: {
+	lda	$ff07
+	and	#%01000000
+	bne inittimerntsc
+
+	ldy timing
+	bne !+
+// PAL VBlank
+	lda #<17734
+	ldx #>17734
+	bne writetimer
+!:  dey
+	bne !+
+// NTSC VBlank
+	lda #<14779
+	ldx #>14779
+	bne writetimer
+!:	dey
+	bne !+
+//  PAL timer
+	lda	timer1value
+	ldx	timer1value+1
+	jmp writetimer
+!:	dey
+	bne !+
+// NTSC timer (TODO! convert timer)
+	beq inittimerend
+!:	dey
+	bne !+
+// PAL timer by songflags
+	beq inittimerend
+!:	dey
+	bne !+
+// NTSC timer by songflags
+	beq inittimerend
+!:	dey
+	bne !+
+// PAL VBlank 2x
+	lda #<8867
+	ldx #>8867
+	bne writetimer
+!:  dey
+	bne inittimerend
+// NTSC VBlank 2x
+	lda #<7389
+	ldx #>7389
+	bne writetimer
+writetimer:
+	sta	$ff00
+	stx	$ff01
+inittimerend:
+	rts
+
+inittimerntsc:
+	ldy timing
+	bne !+
+// PAL VBlank
+	lda #<17898
+	ldx #>17898
+	bne writetimer
+!:  dey
+	bne !+
+// NTSC VBlank
+	lda #<14915
+	ldx #>14915
+	bne writetimer
+!:	dey
+	bne !+
+//  PAL timer
+	lda	timer1value
+	ldx	timer1value+1
+	jmp writetimer
+!:	dey
+	bne !+
+// NTSC timer (TODO! convert timer)
+	beq inittimerend
+!:	dey
+	bne !+
+// PAL timer by songflags
+	beq inittimerend
+!:	dey
+	bne !+
+// NTSC timer by songflags
+	beq inittimerend
+!:	dey
+	bne !+
+// PAL VBlank 2x
+	lda #<8949
+	ldx #>8949
+	bne writetimer
+!:  dey
+	bne inittimerend
+// NTSC VBlank 2x
+	lda #<7457
+	ldx #>7457
+	bne writetimer
+}
+
+// Playback helper tables
+// ----------------------
+// Timer increase frequency (adjusted to current screen refresh)
+timerjiffytab:
+	.byte	50, 60 // PAL, NTSC
+
+// ============================
+// plus/4
+//  PAL  timer clock = 886724
+//  NTSC timer clock = 894886
+// C64
+//  PAL  timer clock = 985248
+//  NTSC timer clock = 1022727
+// ============================
+// VBlank to timer value converter table ( key = current std * 2 + song std ) 
+vblanktab:
+	.word	17734, 14779	// PAL VBlank@PAL, NTSC VBLank@PAL
+	.word	17898, 14915	// PAL VBlank@NTSC, NTSC VBlank@NTSC
+	
+// Conversion table for PAL/NTSC TED timer frequency conversion; 0 means no conversion neccessary (1 whole and 7 fraction bits)
+// eight binary fraction digits (number/256)
+tedtimerconvertertab:
+	.byte	128, 127		// PAL@PAL=1; NTSC@PAL=0.991
+	.byte	129, 128		// PAL@NTSC=1,009; NTSC@NTSC=1
+
+decstr:
+	.text	"000"
 currentsong:
 	.byte	0
 
-logo:	.byte	$ec, $e2, $e2, $7e, $ec, $e2
+logo:
+	.byte	$ec, $e2, $e2, $7e, $ec, $e2
 	.byte	$61, $fc, $6c, $61, $61, $20
 	.byte	$61, $61, $7e, $61, $ec, $20
 	.byte	$61, $61, $20, $61, $61, $20
@@ -250,7 +384,9 @@ logo:	.byte	$ec, $e2, $e2, $7e, $ec, $e2
 	.encoding	"screencode_mixed"
 
 flagtext:
-	.text	"Screen off"
+	.text	"Screen"
+	.byte	$64
+	.text	"off"
 	.byte	0
 	.text	"SID"
 	.byte	0
@@ -260,6 +396,9 @@ flagtext:
 	.byte	0
 	.text	"FM"
 	.byte	0
+	.text	"C64"
+	.byte	$64
+	.text	"SID"
 	.byte	0, 0, 0
 		//0123456789a
 timtab:	.text	"PAL VBlank  "
@@ -268,3 +407,5 @@ timtab:	.text	"PAL VBlank  "
 	.text	"NTSC Timer  "
 	.text	"PAL Timer   "
 	.text	"NTSC Timer  "
+	.text	"PAL 2X      "
+	.text	"NTSC 2X     "
