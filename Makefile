@@ -1,4 +1,4 @@
-KICKASS	=	java -jar KickAss.jar 
+KICKASS	=	java -jar $(KICKASSPATH)/KickAss.jar 
 
 all: exorcist.tmf.prg
 

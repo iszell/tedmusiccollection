@@ -21,6 +21,29 @@
 .label	released	=	author + 32
 .label	tracker		=	released + 32
 
+
+// ============================
+// plus/4
+//  PAL  timer clock = 886724
+//  NTSC timer clock = 894886
+// C64
+//  PAL  timer clock = 985248
+//  NTSC timer clock = 1022727
+// ============================
+.const	CLOCK_PAL				= 17734475
+.const	CLOCK_NTSC				= 14318181
+.const	CLOCK_PLUS4_PAL			= round(CLOCK_PAL/20)		// 886724
+.const	CLOCK_PLUS4_NTSC		= round(CLOCK_NTSC/16)		// 894886
+
+.const	CYCLES_PER_FRAME_PAL	= 17784
+.const	CYCLES_PER_FRAME_NTSC	= 14934
+
+.const	CYCLES_PER_FRAME_PAL_ON_NTSC	= 17948
+.const	CYCLES_PER_FRAME_NTSC_ON_PAL	= 14798
+
+.const	MULTIPLIER_NTSC_ON_PAL	= 1.010
+.const	MULTIPLIER_PAL_ON_NTSC	= 0.991
+
 	* = $1100
 
 .label	srcptr	=	2
@@ -253,14 +276,14 @@ inittimer: {
 	ldy timing
 	bne !+
 // PAL VBlank
-	lda #<17734
-	ldx #>17734
+	lda #<CYCLES_PER_FRAME_PAL
+	ldx #>CYCLES_PER_FRAME_PAL
 	bne writetimer
 !:  dey
 	bne !+
 // NTSC VBlank
-	lda #<14779
-	ldx #>14779
+	lda #<CYCLES_PER_FRAME_NTSC_ON_PAL
+	ldx #>CYCLES_PER_FRAME_NTSC_ON_PAL
 	bne writetimer
 !:	dey
 	bne !+
@@ -283,14 +306,14 @@ inittimer: {
 !:	dey
 	bne !+
 // PAL VBlank 2x
-	lda #<8867
-	ldx #>8867
+	lda #<(CYCLES_PER_FRAME_PAL/2)
+	ldx #>(CYCLES_PER_FRAME_PAL/2)
 	bne writetimer
 !:  dey
 	bne inittimerend
 // NTSC VBlank 2x
-	lda #<7389
-	ldx #>7389
+	lda #<(CYCLES_PER_FRAME_NTSC_ON_PAL/2)
+	ldx #>(CYCLES_PER_FRAME_NTSC_ON_PAL/2)
 	bne writetimer
 writetimer:
 	sta	$ff00
@@ -302,14 +325,14 @@ inittimerntsc:
 	ldy timing
 	bne !+
 // PAL VBlank
-	lda #<17898
-	ldx #>17898
+	lda #<CYCLES_PER_FRAME_PAL_ON_NTSC
+	ldx #>CYCLES_PER_FRAME_PAL_ON_NTSC
 	bne writetimer
 !:  dey
 	bne !+
 // NTSC VBlank
-	lda #<14915
-	ldx #>14915
+	lda #<CYCLES_PER_FRAME_NTSC
+	ldx #>CYCLES_PER_FRAME_NTSC
 	bne writetimer
 !:	dey
 	bne !+
@@ -332,14 +355,14 @@ inittimerntsc:
 !:	dey
 	bne !+
 // PAL VBlank 2x
-	lda #<8949
-	ldx #>8949
+	lda #<(CYCLES_PER_FRAME_PAL_ON_NTSC/2)
+	ldx #>(CYCLES_PER_FRAME_PAL_ON_NTSC/2)
 	bne writetimer
 !:  dey
 	bne inittimerend
 // NTSC VBlank 2x
-	lda #<7457
-	ldx #>7457
+	lda #<(CYCLES_PER_FRAME_NTSC/2)
+	ldx #>(CYCLES_PER_FRAME_NTSC/2)
 	bne writetimer
 }
 
@@ -349,23 +372,10 @@ inittimerntsc:
 timerjiffytab:
 	.byte	50, 60 // PAL, NTSC
 
-// ============================
-// plus/4
-//  PAL  timer clock = 886724
-//  NTSC timer clock = 894886
-// C64
-//  PAL  timer clock = 985248
-//  NTSC timer clock = 1022727
-// ============================
-// VBlank to timer value converter table ( key = current std * 2 + song std ) 
-vblanktab:
-	.word	17734, 14779	// PAL VBlank@PAL, NTSC VBLank@PAL
-	.word	17898, 14915	// PAL VBlank@NTSC, NTSC VBlank@NTSC
-	
 // Conversion table for PAL/NTSC TED timer frequency conversion; 0 means no conversion neccessary (1 whole and 7 fraction bits)
 // eight binary fraction digits (number/256)
 tedtimerconvertertab:
-	.byte	128, 127		// PAL@PAL=1; NTSC@PAL=0.991
+	.byte	128, 126		// PAL@PAL=1; NTSC@PAL=0.991
 	.byte	129, 128		// PAL@NTSC=1,009; NTSC@NTSC=1
 
 decstr:
